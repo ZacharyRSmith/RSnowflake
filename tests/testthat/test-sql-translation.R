@@ -14,21 +14,28 @@
 # limitations under the License.
 
 library(testthat)
-library(RJDBC)
-library(dplyr)
-library(dplyr.snowflakedb)
+# library(dplyr.snowflakedb)
+devtools::load_all()
 options(dplyr.jdbc.classpath = Sys.getenv("SNOWFLAKE_JAR"))
 
 context("SQL translation")
 
-# test <- src_sqlite(tempfile(), create = TRUE)
-test <- src_snowflakedb(account = Sys.getenv("SNOWFLAKE_ACCOUNT"),
-                        user = Sys.getenv("SNOWFLAKE_USER"),
-                        password = Sys.getenv("SNOWFLAKE_PASSWORD"),
-                        opts = list(warehouse = Sys.getenv("SNOWFLAKE_WAREHOUSE"),
-                                    db = Sys.getenv("SNOWFLAKE_DB"),
-                                    schema = "public",
-                                    tracing = "off"))
+src_type <- Sys.getenv('DPLYR_SNOWFLAKEDB_TESTS_SRC_TYPE')
+src_type <- if (src_type == '') 'snowflakedb' else src_type
+src <- if (src_type == 'sqlite') {
+  src_sqlite(tempfile(), create = TRUE)
+} else if (src_type == 'snowflakedb') {
+  src_snowflakedb(account = Sys.getenv("SNOWFLAKE_ACCOUNT"),
+                  host = Sys.getenv("SNOWFLAKE_HOST"),
+                  user = Sys.getenv("SNOWFLAKE_USER"),
+                  password = Sys.getenv("SNOWFLAKE_PASSWORD"),
+                  opts = list(warehouse = Sys.getenv("SNOWFLAKE_WAREHOUSE"),
+                              db = Sys.getenv("SNOWFLAKE_DB"),
+                              schema = "public",
+                              tracing = "off"))
+} else {
+  stop(glue::glue('src_type="{src_type}" not supported'))
+}
 
 test_that("Simple maths is correct", {
   expect_equal(translate_sql(1 + 2), sql("1.0 + 2.0"))
@@ -46,11 +53,11 @@ test_that("dplyr.strict_sql = TRUE prevents auto conversion", {
 })
 
 test_that("Wrong number of arguments raises error", {
-  expect_error(translate_sql(mean(1, 2), window = FALSE), "Invalid number of args")
+  expect_error(translate_sql(mean(1, 2, na.rm = TRUE), window = FALSE), "unused argument")
 })
 
-test_that("Named arguments generates warning", {
-  expect_warning(translate_sql(mean(x = 1), window = FALSE), "Named arguments ignored")
+test_that("Named arguments (other than `x`) raises error", {
+  expect_error(translate_sql(mean(y = 2, na.rm = TRUE), window = FALSE), "unused argument")
 })
 
 test_that("Subsetting always evaluated locally", {
@@ -71,8 +78,8 @@ test_that("between translated to special form (#503)", {
 })
 
 test_that("is.na and is.null are equivalent",{
-  expect_equal(translate_sql(!is.na(x)), sql('NOT(("x") IS NULL)'))
-  expect_equal(translate_sql(!is.null(x)), sql('NOT(("x") IS NULL)'))
+  expect_equal(translate_sql(!is.na(x)), sql('NOT((("x") IS NULL))'))
+  expect_equal(translate_sql(!is.null(x)), sql('NOT((("x") IS NULL))'))
 })
 
 test_that("if translation adds parens", {
@@ -82,7 +89,7 @@ test_that("if translation adds parens", {
   )
   expect_equal(
     translate_sql(if (x) y else z),
-    sql('CASE WHEN ("x") THEN ("y") ELSE ("z") END')
+    sql('CASE WHEN ("x") THEN ("y") WHEN NOT("x") THEN ("z") END')
   )
 
 })
@@ -102,7 +109,7 @@ test_that("unary minus flips sign of number", {
 
 test_that("unary minus wraps non-numeric expressions", {
   expect_equal(translate_sql(-(1L + 2L)), sql("-(1 + 2)"))
-  expect_equal(translate_sql(-mean(x), window = FALSE), sql('-AVG("x")'))
+  expect_equal(translate_sql(-mean(x, na.rm = TRUE), window = FALSE), sql('-AVG("x")'))
 })
 
 test_that("binary minus subtracts", {
@@ -113,7 +120,7 @@ test_that("binary minus subtracts", {
 
 test_that("window functions without group have empty over", {
   expect_equal(translate_sql(n()), sql("COUNT(*) OVER ()"))
-  expect_equal(translate_sql(sum(x)), sql('sum("x") OVER ()'))
+  expect_equal(translate_sql(sum(x, na.rm = TRUE)), sql('sum("x") OVER ()'))
 })
 
 test_that("aggregating window functions ignore order_by", {
@@ -122,7 +129,7 @@ test_that("aggregating window functions ignore order_by", {
     sql("COUNT(*) OVER ()")
   )
   expect_equal(
-    translate_sql(sum(x), vars_order = "x"),
+    translate_sql(sum(x, na.rm = TRUE), vars_order = "x"),
     sql('sum("x") OVER ()')
   )
 })
@@ -137,13 +144,4 @@ test_that("ntile always casts to integer", {
     translate_sql(ntile(x, 10.5)),
     sql('NTILE(10) OVER (ORDER BY "x")')
   )
-})
-
-test_that("connection affects quoting character", {
-  dbiTest <- structure(list(), class = "DBITestConnection")
-  dbTest <- src_sql("test", con = dbiTest)
-  testTable <- tbl_sql("test", src = dbTest, from = "table1")
-
-  out <- select(testTable, field1)
-  expect_match(sql_render(out), "^SELECT `field1` AS `field1`\nFROM `table1`$")
 })
