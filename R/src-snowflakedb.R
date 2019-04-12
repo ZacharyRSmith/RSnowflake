@@ -550,7 +550,7 @@ db_drop_table_wrapper <- function (con, name, ...) {
 #'   to = 'WAREHOUSE.PUBLIC.FOO'
 #' )
 #' @export
-db_snowflake_copy <- function(con, from, to, format_opts=list(), opts=list(), max_percent_error=0, with_metadata=FALSE) {
+db_snowflake_copy <- function(con, from, to, format_opts=list(), opts=list(), max_percent_error=0, with_metadata=FALSE, from_colnames=NULL) {
   to <- utils$dbplyr_schemify(id(to))
   format_opts <- local({
     not_nulls_quoted <- sapply(
@@ -624,7 +624,19 @@ db_snowflake_copy <- function(con, from, to, format_opts=list(), opts=list(), ma
   )
   
   get_query(con, glue::glue("begin transaction name copy_into"))
-  if (with_metadata) {
+
+
+
+  if (is.null(from_colnames) && !with_metadata) {
+    res <- get_query(
+      con,
+      glue::glue(
+        "copy into {to}
+        from '{from}'
+        {opts_str}"
+      )
+    )
+  } else {
     # ENHANCE: How `to_colnames` is got.
     to_colnames <- colnames(get_query(
       con,
@@ -634,24 +646,29 @@ db_snowflake_copy <- function(con, from, to, format_opts=list(), opts=list(), ma
         limit 0"
       )
     ))
-    col_idx_exprs <- sapply(
-      1:(length(to_colnames) - 2), # - 2 for FILENAME, FILE_ROW_NUMBER
-      function (col_idx) glue::glue("${col_idx}")
-    )
+    col_idx_exprs <- if (is.null(from_colnames)) {
+      sapply(
+        1:(length(to_colnames) - 2), # - 2 for FILENAME, FILE_ROW_NUMBER
+        function (col_idx) glue::glue("${col_idx}")
+      )
+    } else {
+      utils$make_sql_col_idx_exprs(
+        to_colnames,
+        from_colnames
+      )
+    }
     # ENHANCE: Support FILENAME and FILE_ROW_NUMBER not being last cols
     res <- get_query(
       con,
       glue::glue(
         "copy into {to}
         from (
-          select {paste(col_idx_exprs, collapse = ', ')}, metadata$FILENAME, metadata$FILE_ROW_NUMBER
+          select {paste(col_idx_exprs, collapse = ', ')} {if (with_metadata) ', metadata$FILENAME, metadata$FILE_ROW_NUMBER' else ''}
           from '{from}'
         )
         {opts_str}"
       )
     )
-  } else {
-    res <- get_query(con, paste("COPY INTO", to, "FROM", from, opts_str))
   }
   # res <- get_query(con, paste("COPY INTO", to, "FROM", from, opts_str))
   if (max_percent_error != 0 && any(res$errors_seen != 0)) {
@@ -731,7 +748,7 @@ db_create_stage <- function(con, stage_name, temporary = FALSE) {
 #'
 #' @param stage_dir A string of the stage destination, including folder.
 #'    Eg, '@warehouse.stages.foo_stage/foo/bar'.
-db_load_from_file <- function(con, table_name, file_path, stage_dir) {
+db_load_from_file <- function(con, table_name, file_path, stage_dir, ...) {
   stopifnot(file.exists(file_path))
   table_name <- utils$dbplyr_schemify(table_name)
   
@@ -742,7 +759,8 @@ db_load_from_file <- function(con, table_name, file_path, stage_dir) {
   db_snowflake_copy(
     con,
     from = paste(stage_dir, basename(file_path), sep = '/'),
-    to = table_name
+    to = table_name,
+    ...
   )
 }
 

@@ -78,9 +78,39 @@ is_con <- function (obj) {
   })
 }
 
+#' Make sql exprs of from's col idxs mapped to to's cols.
+#'
+#' make_sql_col_idx_exprs() makes sql exprs of from's col idxs mapped to to's cols.
+#' See examples.
+#'
+#' @param to_colnames a character vector of to's colnames, ordered.
+#' @param from_colnames a character vector of from's colnames, ordered.
+#' @examples
+#' to_colnames <- c('X', 'Y')
+#' from_colnames <- c('Y', 'X')
+#'
+#' actual <- make_sql_col_idx_exprs(
+#'   to_colnames,
+#'   from_colnames
+#' )
+#'
+#' expect_equal(
+#'   actual,
+#'   c('$2', '$1')
+#' )
+make_sql_col_idx_exprs <- function (to_colnames, from_colnames) {
+  res <- sapply(
+    from_colnames,
+    function (colname) glue("${which(to_colnames == colname)}")
+  )
+  names(res) <- names(from_colnames)
+  res
+}
+
 utils <- list(
   dbplyr_schemify = dbplyr_schemify,
   get_connection_type = get_connection_type,
   guess_delim = guess_delim,
-  is_con = is_con
+  is_con = is_con,
+  make_sql_col_idx_exprs = make_sql_col_idx_exprs
 )
