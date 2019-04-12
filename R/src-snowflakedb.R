@@ -566,7 +566,7 @@ db_snowflake_copy <- function(con, from, to, format_opts=list(), opts=list(), ma
     )
     if (!length(format_opts$TYPE)) {
       # 'CSV' is Snowflake's default TYPE.
-      #' Set it here to make the logic below easier.
+      # Set it here to make the logic below easier.
       format_opts$TYPE <- '"CSV"'
     }
     if (format_opts$TYPE != '"CSV"') {
