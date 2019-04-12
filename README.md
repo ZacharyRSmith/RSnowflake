@@ -14,9 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-# dplyr.snowflakedb
+# RSnowflake
 
 This R package extends [`dplyr`](https://github.com/hadley/dplyr) to add backend support for [SnowflakeDB](https://snowflake.net).  More details on `dplyr` can be found in the [README](https://github.com/hadley/dplyr/blob/master/README.md) page for the project.
+
+This code was originally forked from snowflakedb/dplyr-snowflakedb.  In order to accept issues and pull requests, I created this repo.
 
 ## R Environment Setup
 
@@ -73,3 +75,14 @@ If you find an issue and would like to fix it yourself, please do, and submit a 
 ## Copyright and License
 
 Copyright 2017 Snowflake Computing, Inc. Licensed under the [Apache License, Version 2.0](https://github.com/snowflakedb/dplyr-snowflakedb/blob/master/LICENSE).
+
+## ENHANCEMENTs
+
+Pass colnames to copy_to
+Pass transformers to copy_to
+Pass transformers w/deps to copy_to
+
+colname
+deps
+transformer
+dtype
