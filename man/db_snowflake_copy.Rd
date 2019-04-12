@@ -4,7 +4,8 @@
 \alias{db_snowflake_copy}
 \title{Perform a COPY INTO in Snowflake to perform a load or unload operation.}
 \usage{
-db_snowflake_copy(con, from, to, format_opts = list())
+db_snowflake_copy(con, from, to, format_opts = list(), opts = list(),
+  max_percent_error = 0, with_metadata = FALSE, from_colnames = NULL)
 }
 \arguments{
 \item{con}{A SnowflakeDBConnection object.}
@@ -18,7 +19,37 @@ filesystem location, a table, or a Snowflake stage.}
 \item{format_opts}{A list of key-value pairs for the Snowflake COPY file_format options.}
 }
 \description{
-Perform a COPY INTO in Snowflake to perform a load or unload operation.
+Note that default opts here are different from Snowflake's default opts.
+}
+\details{
+This is to:
+1. align with tidyverse conventions, and
+2. make this amenable to R-produced files.
+
+Note that if TYPE is not provided,
+then if utils$guess_delim(from) returns a delim,
+  TYPE is set to 'CSV'.
+
+Details:
+
+FIELD_DELIMITER defaults for
+Snowflake: ','
+db_snowflake_copy(): utils$guess_delim(from)
+
+NULL_IF defaults for
+Snowflake: c('\\N')
+db_snowflake_copy(): c('\\N', 'NULL', 'NUL', '<NULL>', '<Null>', '', '.', 'NA')
+More vals are considered NULL per R convention.
+NOTE WELL: NA is cast to NULL because there is no standard way to indicate NA in Snowflake.
+
+SKIP_HEADER defaults for
+Snowflake: 0
+db_snowflake_copy(): 1 if format_opts$TYPE='CSV', else do not override Snowflake's default.
+
+TRIM_SPACE defaults for
+Snowflake: FALSE
+db_snowflake_copy(): TRUE
+This follows tidyverse convention.
 }
 \examples{
 \dontrun{
@@ -34,4 +65,10 @@ my_db <- src_snowflakedb(user = "snowman",
 db_snowflake_copy(my_db$con, from = "file:///my/directory/foo.csv", to = "target_table", 
 format_opts = list(format = 'csv', field_delimiter = ','))
 }
+# Copy from stage
+db_snowflake_copy(
+  my_db$con,
+  from = '@warehouse.stages.my_s3_bucket_name/and/heres/data.tsv',
+  to = 'WAREHOUSE.PUBLIC.FOO'
+)
 }
