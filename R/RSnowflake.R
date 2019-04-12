@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#' dplyr.snowflakedb: A SnowflakeDB backend for dplyr
+#' RSnowflake: A SnowflakeDB backend for dplyr
 #'
 #' @docType package
-#' @name dplyr.snowflakedb
+#' @name RSnowflake
 #' @import assertthat
 #' @importFrom utils head tail
 NULL

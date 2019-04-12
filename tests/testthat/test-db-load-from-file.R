@@ -10,8 +10,8 @@ context('db_load_from_file()')
 `%||na%` <- function(a, b) if (is.null(a) || is.na(a)) b else a
 
 cfg <- list(
-  stage_name = Sys.getenv('DPLYR_SNOWFLAKEDB_TESTS_STAGE'),
-  src_type = Sys.getenv('DPLYR_SNOWFLAKEDB_TESTS_SRC_TYPE', unset = NA) %||na% 'snowflakedb'
+  stage_name = Sys.getenv('RSNOWFLAKE_TESTS_STAGE'),
+  src_type = Sys.getenv('RSNOWFLAKE_TESTS_SRC_TYPE', unset = NA) %||na% 'snowflakedb'
 )
 if (cfg$stage_name == '') stop('cfg$stage_name must be populated')
 

@@ -14,13 +14,12 @@
 # limitations under the License.
 
 library(testthat)
-# library(dplyr.snowflakedb)
 devtools::load_all()
 options(dplyr.jdbc.classpath = Sys.getenv("SNOWFLAKE_JAR"))
 
 context("SQL translation")
 
-src_type <- Sys.getenv('DPLYR_SNOWFLAKEDB_TESTS_SRC_TYPE')
+src_type <- Sys.getenv('RSNOWFLAKE_TESTS_SRC_TYPE')
 src_type <- if (src_type == '') 'snowflakedb' else src_type
 src <- if (src_type == 'sqlite') {
   src_sqlite(tempfile(), create = TRUE)

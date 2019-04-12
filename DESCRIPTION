@@ -1,6 +1,6 @@
-Package: dplyr.snowflakedb
-Title: SnowflakeDB backend for dplyr
-Description: Adds SnowflakeDB SQL backend support for dplyr.
+Package: RSnowflake
+Title: Use dplyr with SnowflakeDB
+Description: A DBI/dplyr/dbplyr backend for SnowflakeDB.  "Forked" from snowflakedb/dplyr-snowflakedb.
 Version: 0.3.0
 Date: 2017-10-03
 Authors@R: c(
@@ -11,9 +11,9 @@ Authors@R: c(
     person("Snowflake Computing", role = "cph")
     )
 Author: Greg Rahn <greg@snowflake.net>
-Maintainer: Greg Rahn <greg@snowflake.net>
-URL: https://github.com/snowflakedb/dplyr-snowflakedb
-BugReports: https://github.com/snowflakedb/dplyr-snowflakedb/issues
+Maintainer: Zachary Smith <zacharysmith4989@gmail.com>
+URL: https://github.com/zacharyrsmith/RSnowflake
+BugReports: https://github.com/zacharyrsmith/RSnowflake/issues
 Depends:
     R (>= 3.2.1),
     RJDBC,

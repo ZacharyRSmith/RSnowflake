@@ -46,7 +46,7 @@ install.packages(c("nycflights13", "Lahman"))
 
 ```R
 install.packages("devtools")
-devtools::install_github("snowflakedb/dplyr-snowflakedb")
+devtools::install_github("zacharyrsmith/RSnowflake")
 ```
 
 ## Example SnowflakeDB Connection
@@ -66,7 +66,7 @@ my_db <- src_snowflakedb(user = "snowman",
 
 ##  Issues
 
-Please file any issues or bugs you find using the project's [issue page](https://github.com/snowflakedb/dplyr-snowflakedb/issues).  Please include a minimal reproducible example where possible.
+Please file any issues or bugs you find using the project's [issue page](https://github.com/zacharyrsmith/RSnowflake/issues).  Please include a minimal reproducible example where possible.
 
 ## Contributing
 
@@ -74,15 +74,4 @@ If you find an issue and would like to fix it yourself, please do, and submit a 
 
 ## Copyright and License
 
-Copyright 2017 Snowflake Computing, Inc. Licensed under the [Apache License, Version 2.0](https://github.com/snowflakedb/dplyr-snowflakedb/blob/master/LICENSE).
-
-## ENHANCEMENTs
-
-Pass colnames to copy_to
-Pass transformers to copy_to
-Pass transformers w/deps to copy_to
-
-colname
-deps
-transformer
-dtype
+Copyright 2017 Snowflake Computing, Inc. Licensed under the [Apache License, Version 2.0](https://github.com/zacharyrsmith/RSnowflake/blob/master/LICENSE).

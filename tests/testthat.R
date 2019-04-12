@@ -14,10 +14,9 @@
 
 library("testthat")
 devtools::load_all()
-# library("dplyr.snowflakedb")
 options(dplyr.jdbc.classpath = Sys.getenv("SNOWFLAKE_JAR"))
 
-Sys.setenv(DPLYR_SNOWFLAKEDB_TESTS_SRC_TYPE = 'sqlite')
-test_check("dplyr.snowflakedb")
-Sys.setenv(DPLYR_SNOWFLAKEDB_TESTS_SRC_TYPE = 'snowflakedb')
-test_check("dplyr.snowflakedb")
+Sys.setenv(RSNOWFLAKE_TESTS_SRC_TYPE = 'sqlite')
+test_check("RSnowflake")
+Sys.setenv(RSNOWFLAKE_TESTS_SRC_TYPE = 'snowflakedb')
+test_check("RSnowflake")

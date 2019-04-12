@@ -175,9 +175,9 @@ src_snowflakedb <- function(user = NULL,
   # set client metadata info
   snowflakeClientInfo <- paste0(
     '{',
-    '"APPLICATION": "dplyr.snowflakedb",',
-    '"dplyr.snowflakedb.version": "',
-    packageVersion("dplyr.snowflakedb"),
+    '"APPLICATION": "RSnowflake",',
+    '"RSnowflake.version": "',
+    packageVersion("RSnowflake"),
     '",',
     '"dplyr.version": "',
     packageVersion("dplyr"),
@@ -789,7 +789,7 @@ db_load_from_file <- function(con, table_name, file_path, stage_dir, ...) {
 #'    If TRUE, then if a table is created, it is created as a temp table.
 atomic_copy <- function(con, from, to, stage_name, temporary = FALSE) {
   to <- utils$dbplyr_schemify(to)
-  intermediate_table_name <- paste0(to, "_dplyr_snowflakedb_intermediate_table")
+  intermediate_table_name <- paste0(to, "_RSNOWFLAKE_intermediate_table")
   tryCatch({
     dbSendQuery(
       con,

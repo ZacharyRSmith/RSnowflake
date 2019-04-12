@@ -202,7 +202,7 @@
 
 ================================================================================
 
-Portions of dplyr.snowflakedb are derived from dplyr
+Portions of RSnowflake are derived from dplyr
 URL: https://github.com/hadley/dplyr
 Attribution: Copyright 2013-2017 RStudio
 License: MIT License
