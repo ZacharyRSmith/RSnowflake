@@ -1,6 +1,7 @@
 suppressMessages({
   library(lubridate)
   library(testthat)
+  library(tidyverse)
   devtools::load_all()
   options(dplyr.jdbc.classpath = Sys.getenv('SNOWFLAKE_JAR'))
 })
@@ -39,7 +40,7 @@ test_that('@param col_names enables loading files with differently ordered cols'
 
   df1 <- data.frame(X = 'x1', Y = 'y1')
   t <- copy_to(
-    dest = src,
+    src$con,
     df = df1,
     name = table_name,
     temporary = TRUE,
@@ -68,4 +69,38 @@ test_that('@param col_names enables loading files with differently ordered cols'
       Y = c('y1', 'y2')
     )
   )
+  src$get_query(glue("drop table {table_name}"))
+})
+
+test_that('@param col_spec enables transformations during copy', {
+  skip_if(cfg$src_type == 'sqlite')
+  table_name <- 'SANDBOX.PUBLIC.TEST_TRANSFORMATION_DURING_COPY'
+
+  df1 <- data.frame(SOME_FLAG = c(1, 0, 1, 1, 0))
+  t <- copy_to(
+    src$con,
+    df = df1,
+    name = table_name,
+    temporary = TRUE,
+    stage_name = cfg$stage_name
+  )
+
+  tmp <- tempfile()
+  df2 <- data.frame(SOME_FLAG = c('YES', 'Yes', 'Y', 'yes', 'y', 'NO', 'No', 'N', 'no', 'n'))
+  readr::write_tsv(df2, tmp)
+  db_load_from_file(
+    src$con,
+    table_name = table_name,
+    file_path = tmp,
+    stage_dir = cfg$stage_name,
+    # col_spec = data.frame(
+    #   colname = 'SOME_FLAG',
+    #   transformer = "iff(SOME_FLAG::boolean, 1, 0)"
+    # ),
+    format_opts = list(FIELD_DELIMITER = "'\t'")
+  )
+
+  # actual <- t %>%
+  #   collect()
+  # expect_equal(sum())
 })

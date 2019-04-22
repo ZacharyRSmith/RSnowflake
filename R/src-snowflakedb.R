@@ -550,7 +550,7 @@ db_drop_table_wrapper <- function (con, name, ...) {
 #'   to = 'WAREHOUSE.PUBLIC.FOO'
 #' )
 #' @export
-db_snowflake_copy <- function(con, from, to, format_opts=list(), opts=list(), max_percent_error=0, with_metadata=FALSE, from_colnames=NULL) {
+db_snowflake_copy <- function(con, from, to, format_opts=list(), opts=list(), max_percent_error=0, with_metadata=FALSE, from_colnames=NULL, col_spec=NULL) {
   to <- utils$dbplyr_schemify(id(to))
   format_opts <- local({
     not_nulls_quoted <- sapply(
@@ -627,7 +627,7 @@ db_snowflake_copy <- function(con, from, to, format_opts=list(), opts=list(), ma
 
 
 
-  if (is.null(from_colnames) && !with_metadata) {
+  if (is.null(from_colnames) && !with_metadata && is.null(col_spec)) {
     res <- get_query(
       con,
       glue::glue(
@@ -654,7 +654,8 @@ db_snowflake_copy <- function(con, from, to, format_opts=list(), opts=list(), ma
     } else {
       utils$make_sql_col_idx_exprs(
         to_colnames,
-        from_colnames
+        from_colnames,
+        col_spec
       )
     }
     # ENHANCE: Support FILENAME and FILE_ROW_NUMBER not being last cols

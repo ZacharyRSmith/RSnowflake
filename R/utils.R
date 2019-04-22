@@ -98,7 +98,19 @@ is_con <- function (obj) {
 #'   actual,
 #'   c('$2', '$1')
 #' )
-make_sql_col_idx_exprs <- function (to_colnames, from_colnames) {
+make_sql_col_idx_exprs <- function (to_colnames, from_colnames, col_spec) {
+  res <- sapply(
+    from_colnames,
+    function (colname) {
+      col_idx <- which(to_colnames == colname)
+      if (colname %in% col_spec$colname) {
+        
+        glue::glue("${col_idx}")
+      } else {
+        glue::glue("${col_idx}")
+      }
+    }
+  )
   res <- sapply(
     from_colnames,
     function (colname) glue("${which(to_colnames == colname)}")
