@@ -1,3 +1,4 @@
+#' @export
 extend_src <- function (src) {
   snowflake_class_name = 'snowflake_class_name'
   # TODO: pass `...` to DBI funcs?
